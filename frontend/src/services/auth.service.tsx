@@ -1,51 +1,24 @@
-import axios from "axios";
-import { Report } from "notiflix";
 
-const API  = 'http://localhost:5000';
+import api from '../api/axios_api_calls';
+import {handleApiError} from '../api/errorhandling';
+
 
 export const registerUser = async(data:any)=>{
      try {
-     const res = await axios.post(`${API}/register`,data, { withCredentials: true });
+     const res = await api.post('/register',data, );
      return res.data
      } catch (error) {
-          if (axios.isAxiosError(error)&& error.response) {
-               Report.failure(
-                    "Registration Failed",
-                    error.response.data.message,
-                    "Close"
-               )
-          }else{
-               Report.failure(
-                    "Error",
-                    "Something Went to Wrong",
-                    "Close"
-               )
-          }
-          throw error;
+          handleApiError(error, "Registration failed")
      }
    
 }
 
 export const otpVerification = async(otp:any)=>{
      try {
-          const res = await axios.post(`${API}/otp`,{otp}, { withCredentials: true });
+          const res = await api.post('/otp',{otp},);
           return res.data;
      } catch (error) {
-            if (axios.isAxiosError(error)&& error.response) {
-               console.log(error.response.data.message);
-               Report.failure(
-                    "OTP Verification Failed",
-                    "Invalid OTP or OTP is Expired",
-                    "Close"
-               )
-          }else{
-               Report.failure(
-                    "Error",
-                    "Something Went to Wrong",
-                    "Close"
-               )
-          }
-          throw error;
+           handleApiError(error,"Invalid or expired OTP")
      }
      
 }
@@ -54,24 +27,10 @@ export const otpVerification = async(otp:any)=>{
 
 export const resendOTP = async()=>{
      try {
-          const res = await axios.post(`${API}/resendOTP`,{}, { withCredentials: true });
+          const res = await api.post('/resendOTP',);
           return res.data;
      } catch (error) {
-            if (axios.isAxiosError(error)&& error.response) {
-               console.log(error.response.data.message);
-               Report.failure(
-                    "Resend Fail",
-                     error?.response?.data?.message || "Something went wrong",
-                    "Close"
-               )
-          }else{
-               Report.failure(
-                    "Error",
-                    "Something Went to Wrong",
-                    "Close"
-               )
-          }
-          throw error;
+           handleApiError(error,"Resend Otp Failed");
      }
 
 
@@ -80,24 +39,10 @@ export const resendOTP = async()=>{
 
 export const loginUser = async(data:any)=>{
      try {
-          const res = await axios.post(`${API}/login`,data, { withCredentials: true });
+          const res = await api.post('/login',data);
           return res.data;
      } catch (error) {
-            if (axios.isAxiosError(error)&& error.response) {
-               console.log(error.response.data.message);
-               Report.failure(
-                    "Resend Fail",
-                     error?.response?.data?.message || "Something went wrong",
-                    "Close"
-               )
-          }else{
-               Report.failure(
-                    "Error",
-                    "Something Went to Wrong",
-                    "Close"
-               )
-          }
-          throw error;
+           handleApiError(error,"Login Failed");
      }
 
 

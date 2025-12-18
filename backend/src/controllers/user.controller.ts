@@ -1,11 +1,12 @@
 
 import { Request,Response } from "express";
 import { UserService } from "../services/user.service";
+import { IUserService } from "../services/interface/user.service.interface";
+import { IUserController } from "./interface/user.controller.interface";
 
+export class userController implements IUserController {
 
-export class userController {
-
-    private UserService = new UserService();
+    constructor(private _userService:IUserService){}
 
     // user Registration 
 
@@ -19,7 +20,7 @@ export class userController {
               return;
             }
             const {user} = 
-            await this.UserService.registerUser({name,email,mobile,password});
+            await this._userService.registerUser({name,email,mobile,password});
           
             res.cookie("otpEmail",email,{httpOnly:true,sameSite:"lax",secure:false});
 
@@ -46,7 +47,7 @@ export class userController {
 
             console.log("Email from ",email)
 
-            const storedOtp = await this.UserService.verifyOtp(email,otp);
+            const storedOtp = await this._userService.verifyOtp({email,otp});
 
             if(!storedOtp){
                res.status(400).json({message:"Invalid or Expired Otp"});
@@ -73,7 +74,7 @@ export class userController {
               return
             }
 
-           const otpResend = await this.UserService.ResendOTP(email);
+           const otpResend = await this._userService.ResendOTP(email);
 
            if (!otpResend) {
             res.status(400).json({massage:"Failed to resend OTP"});
@@ -94,7 +95,7 @@ export class userController {
         try {
             const {email , password} = req.body;
 
-            const {user , accessToken , refreshToken} = await this.UserService.loginUser({email,password});
+            const {user , accessToken , refreshToken} = await this._userService.loginUser({email,password});
 
             res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: "lax", secure: false});
             res.cookie("refreshToken", refreshToken, { httpOnly: true, sameSite: "lax", secure: false });
@@ -103,7 +104,7 @@ export class userController {
 
         } catch (error) {
             console.error("Error in Login the user :",error)
-            res.status(500).json({message:"Internal server error :", error:(error as Error).message});
+            res.status(500).json({message:error});
         }
     }
 

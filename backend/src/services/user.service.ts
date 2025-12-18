@@ -1,45 +1,75 @@
 import bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
-import { UserModel ,IsUser} from '../models/userModel';
+import { UserModel ,IsUser} from '../models/user.model';
 import { UserRepository } from '../ repositories/user.repository';
 import { generate4digitOtp } from '../utils/generateOTP';
 import { OTP , IsOtp } from '../models/otp.model';
 import { generateSlug } from '../utils/generateSlug';
 import { sendMailer } from '../utils/sendMailer';
 import { IsTemp } from '../models/temp.model';
+import { TempRepository } from '../ repositories/temp.repository';
+import { OtpRepository } from '../ repositories/otp.repository';
+import { IUserService } from './interface/user.service.interface';
+
+import {
+   RegisterUserRequestDto ,
+   LoginUserRequestDto,
+   VerifyOtpRequestDto
+  } from '../dto/request/user.request.dto';
+
+import { 
+  RegisterUserResponseDto,
+  UserResponseDto,
+  LoginUserResponseDto,
+  ResendOtpResponseDto,
+  VerifyOtpResponseDto
+} from '../dto/response/user.response.dto';
+
+export class UserService implements IUserService {
 
 
-export class UserService {
+  //  Repositories ++==============================================================
 
-     private userRepo = new UserRepository();
-     private authService = new AuthService();
+     private _userRepo = new UserRepository();
+     private _authService = new AuthService();
+     private _tempRepo = new TempRepository();
+     private _otpRepo = new OtpRepository();
 
-     // hasing password =============================================================
 
-     private async hashPassword(password:string):Promise<string>{
+  // hasing password =============================================================
+
+     private async _hashPassword(password:string):Promise<string>{
           return bcrypt.hash(password,10)
      }
 
+    //  Map to User  Response =======================================================
+
+    private mapToUserResponse(user:any):UserResponseDto{
+      return {
+          id:user._id,
+          name:user.name,
+          email:user.email,
+          mobile:user.mobile,
+          slug:user.slug,
+          role:user.role
+      }
+    }
+
      // Register new user and genarating otp , sending mail with the otp ========================================
 
-     async registerUser(data:{
-          name:string,
-          email:string,
-          mobile:string,
-          password:string
-     }):Promise<{user:IsTemp}>{
+     async registerUser(data:RegisterUserRequestDto):Promise<RegisterUserResponseDto>{
           
-          const existingUser = await this.userRepo.findExistingEmail(data.email);
+          const existingUser = await this._userRepo.findOne({email:data.email});
           
           if (existingUser) {
                throw new Error('User Already Exist');
           }
           const slug = await generateSlug(data.name)
 
-          const hashedPassword = await this.hashPassword(data.password);
+          const hashedPassword = await this._hashPassword(data.password);
 
 
-          const user = await this.userRepo.createTemp({
+          const tempUser = await this._tempRepo.create({
                ...data,
                password:hashedPassword,
                slug:slug,
@@ -61,26 +91,28 @@ export class UserService {
 
           await sendMailer(generateOtp.toString(),email);
 
-          return {user}
+          return {
+             message: 'User registered successfully. OTP sent to email.',
+             user: this.mapToUserResponse(tempUser),
+          }
      }
 
  
  //  insertin The otp ==============================================
 
 
-     async verifyOtp(email: string, otp: number | string):Promise<boolean>{
+     async verifyOtp(data: VerifyOtpRequestDto):Promise<VerifyOtpResponseDto>{
 
-         const foundOtp = await this.userRepo.findOtp(email);
+         const {email,otp} = data;
 
-           if(!foundOtp){
-              return false;
-           } 
+         const foundOtp = await this._otpRepo.findOne({email});
 
-           if (foundOtp.otp.toString() !== otp.toString()) {
+
+           if (!foundOtp || foundOtp.otp.toString() !== otp.toString()) {
                throw new Error("Invalid Otp or otp is Expired");
            }
 
-           const tempUser = await this.userRepo.findEmail(email);
+           const tempUser = await this._tempRepo.findOne({email});
 
 
            if (!tempUser) {
@@ -89,28 +121,30 @@ export class UserService {
 
             const tempUserObj = tempUser.toObject();
 
-           await this.userRepo.createOrg({...tempUserObj});
+           await this._userRepo.create({...tempUserObj});
 
-           await this.userRepo.deleteOtp(email);
-           await this.userRepo.deleteTempUser(email);
+           await this._otpRepo.delete(email);
+           await this._tempRepo.delete(email);
 
-           return true;
+           return {
+                message: 'OTP verified successfully', success: true
+           }
      }
 
 
    // ====  Resend OTP =======================================
    
-   async ResendOTP(email:string):Promise<boolean>{
+   async ResendOTP(email:string):Promise<ResendOtpResponseDto>{
        try {
       
-         const tempUser = await this.userRepo.findEmail(email);
+         const tempUser = await this._tempRepo.findOne({email});
          if (!tempUser) {
             throw new Error("User not found or User Already Verified");
          };
 
          const otp = generate4digitOtp();
 
-         const existingOTP = await this.userRepo.findOtp(email);
+         const existingOTP = await this._otpRepo.findOne({email});
          if (existingOTP) {
             await OTP.updateOne({email},{otp,createdAt:new Date()});
          }else{
@@ -119,23 +153,26 @@ export class UserService {
          }
 
          await sendMailer(otp.toString(),email);
-         return true;
+         return{
+           message: 'OTP resent successfully', success: true 
+         }
 
        } catch (error) {
         console.error(error);
-        return false;
+        return {
+          message:'something went to wrong',
+          success:false
+        };
        }
    }
 
-  // User Login ==============================================
+
+  // User Login ================================================
 
 
-  async loginUser(data:{
-    
-          email:string,
-          password:string}):Promise<{user:IsUser;accessToken: string;refreshToken: string}>{
+  async loginUser(data:LoginUserRequestDto):Promise<LoginUserResponseDto>{
 
-      const user = await this.userRepo.loginFindEmail(data.email);
+      const user = await this._userRepo.findOne({email:data.email});
 
       if (!user) {
           throw new Error('User not found .Please register ...........!');
@@ -147,13 +184,22 @@ export class UserService {
            throw new Error("Invalid password...!");
          }
 
-           const accessToken = this.authService.generateAccessToken({id:user.id});
-           const refreshToken = this.authService.generateRefreshToken({id:user.id});
+           const accessToken = this._authService.generateAccessToken({id:user.id});
+           const refreshToken = this._authService.generateRefreshToken({id:user.id});
           const { password, ...userData } = user.toObject(); 
-          return {user:userData,accessToken,refreshToken}
+          return {
+             message: 'Login successful',
+             user: this.mapToUserResponse(user),
+             accessToken,
+             refreshToken,
+             };
+          
 
   }
 
        
 
 }
+
+
+

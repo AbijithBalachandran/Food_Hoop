@@ -3,9 +3,9 @@ import { useState } from "react";
 import { validEmail, validPassword,} from "../../utils/validations/signin";
 import { loginUser } from "../../services/auth.service";
 import { useNavigate } from "react-router-dom";
-import { Report } from "notiflix";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/authContex";
+import { toast } from "react-toastify";
 
 
 
@@ -49,17 +49,13 @@ export default function loginComponent() {
     console.log('form data :',form)
     loginUser(form).then(() => {
       refreshUser();
-       Report.success(
-        "Success",
-        "Successfully Complete",
-        "Thanks"
-       )
+      toast.success(
+          "Successfully Complete"
+      )
       navigate("/home");
-    }).catch((errors)=>{
-      Report.failure(
-        "Error",
-        errors,
-        "Close"
+    }).catch(()=>{
+      toast.error(
+         "Wrong Password or Email"
       )
     })
   };

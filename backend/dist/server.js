@@ -11,7 +11,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const app = (0, express_1.default)();
 // Handling middlwares ===========
 app.use((0, cors_1.default)({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONT_END_URL,
     credentials: true
 }));
 app.use(express_1.default.json());
@@ -34,6 +34,6 @@ app.use('/delivery', delivery_router_1.default);
 app.use('/auth', auth_router_1.default);
 // starting server  =============
 app.listen(5000, () => {
-    console.log('http://localhost:5000');
+    console.log(process.env.VITE_BACKEND_URL);
 });
 //# sourceMappingURL=server.js.map

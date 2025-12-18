@@ -1,11 +1,13 @@
 
 import { Request,Response } from "express";
 import { DeliveryService } from "../services/delivery.service";
+import { IDeliveryController } from "./interface/delivery.controller";
+import { IDeliveryService } from "../services/interface/delivery.service.interface";
 
 
-export class DeliveryController {
+export class DeliveryController  implements IDeliveryController{
 
-    private DeliveryService = new DeliveryService();
+    constructor(private _deliveryService:IDeliveryService){};
 
     // vendor Registration =================================================
 
@@ -14,7 +16,7 @@ export class DeliveryController {
             
             const {name,email,city,mobile,password} = req.body;
             const {user} = 
-            await this.DeliveryService.registerDelivery({name,email,city,mobile,password});
+            await this._deliveryService.registerDelivery({name,email,city,mobile,password});
           
             res.cookie("otpEmail",email,{httpOnly:true,sameSite:"strict",secure:true});
 

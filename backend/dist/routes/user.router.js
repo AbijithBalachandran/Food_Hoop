@@ -2,8 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const user_controller_1 = require("../controllers/user.controller");
+const user_service_1 = require("../services/user.service");
 const user_router = (0, express_1.Router)();
-const user_Controller = new user_controller_1.userController();
+const user_Controller = new user_controller_1.userController(new user_service_1.UserService());
 user_router.post('/register', user_Controller.registerUser);
 user_router.post('/otp', user_Controller.otpVerification);
 user_router.post('/login', user_Controller.loginVerification);

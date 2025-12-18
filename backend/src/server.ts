@@ -11,7 +11,7 @@ const app = express();
 // Handling middlwares ===========
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: process.env.FRONT_END_URL,
   credentials: true
 }));
 app.use(express.json());
@@ -41,6 +41,6 @@ app.use('/auth',authRouter);
 
 
 app.listen(5000,()=>{
-    console.log('http://localhost:5000')
+    console.log(process.env.VITE_BACKEND_URL)
 });
 

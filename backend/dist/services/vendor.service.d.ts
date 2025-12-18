@@ -1,17 +1,13 @@
-import { IsTemp } from '../models/temp.model';
-export declare class vendorService {
-    private userRepo;
-    private authService;
+import { IVendorService } from './interface/vendor.service.interface';
+import { RegisterUserRequestDto } from '../dto/request/user.request.dto';
+import { RegisterUserResponseDto } from '../dto/response/user.response.dto';
+export declare class VendorService implements IVendorService {
+    private _userRepo;
+    private _authService;
+    private _tempRepo;
+    private _otpRepo;
     private hashPassword;
-    registerVendor(data: {
-        resturentName: string;
-        licenceNumber: string;
-        name: string;
-        email: string;
-        mobile: string;
-        password: string;
-    }): Promise<{
-        user: IsTemp;
-    }>;
+    private mapToUserResponse;
+    registerVendor(data: RegisterUserRequestDto): Promise<RegisterUserResponseDto>;
 }
 //# sourceMappingURL=vendor.service.d.ts.map

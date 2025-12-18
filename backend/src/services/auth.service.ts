@@ -3,23 +3,23 @@ import { accessSecret , refreshSecret } from '../config/config';
 
 export class AuthService{
     
-    private accessToken = accessSecret || 'accessSecret';
-    private refreshToken = refreshSecret || 'refreshSecret';
+    private _accessToken = accessSecret || 'accessSecret';
+    private _refreshToken = refreshSecret || 'refreshSecret';
 
     generateAccessToken(payload:object){
-        return jwt.sign(payload,this.accessToken,{expiresIn:'15m'});
+        return jwt.sign(payload,this._accessToken,{expiresIn:'15m'});
     }
 
     generateRefreshToken(payload:object){
-        return jwt.sign(payload,this.refreshToken,{expiresIn:'7d'});
+        return jwt.sign(payload,this._refreshToken,{expiresIn:'7d'});
     }
 
     verifyAccessToken(token:string){
-        return jwt.verify(token,this.accessToken);
+        return jwt.verify(token,this._accessToken);
     }
 
     verifyRefreshToken(token:string){
-        return jwt.verify(token,this.refreshToken);
+        return jwt.verify(token,this._refreshToken);
     }
 
 }

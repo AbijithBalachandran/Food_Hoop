@@ -8,20 +8,20 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = require("../config/config");
 class AuthService {
     constructor() {
-        this.accessToken = config_1.accessSecret || 'accessSecret';
-        this.refreshToken = config_1.refreshSecret || 'refreshSecret';
+        this._accessToken = config_1.accessSecret || 'accessSecret';
+        this._refreshToken = config_1.refreshSecret || 'refreshSecret';
     }
     generateAccessToken(payload) {
-        return jsonwebtoken_1.default.sign(payload, this.accessToken, { expiresIn: '15m' });
+        return jsonwebtoken_1.default.sign(payload, this._accessToken, { expiresIn: '15m' });
     }
     generateRefreshToken(payload) {
-        return jsonwebtoken_1.default.sign(payload, this.refreshToken, { expiresIn: '7d' });
+        return jsonwebtoken_1.default.sign(payload, this._refreshToken, { expiresIn: '7d' });
     }
     verifyAccessToken(token) {
-        return jsonwebtoken_1.default.verify(token, this.accessToken);
+        return jsonwebtoken_1.default.verify(token, this._accessToken);
     }
     verifyRefreshToken(token) {
-        return jsonwebtoken_1.default.verify(token, this.refreshToken);
+        return jsonwebtoken_1.default.verify(token, this._refreshToken);
     }
 }
 exports.AuthService = AuthService;

@@ -1,5 +1,5 @@
 import slugify from 'slugify';
-import { UserModel } from '../models/userModel';
+import { UserModel } from '../models/user.model';
 
 export const generateSlug = async (name: string):Promise<string>=>{
     

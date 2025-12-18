@@ -23,7 +23,7 @@ const otpSchema:Schema<IsOtp> = new mongoose.Schema(
             default:Date.now,
             expires:60
         }
-    }
-)
+    },{timestamps:true}
+);
 
 export const OTP = mongoose.model<IsOtp>("OTP",otpSchema);

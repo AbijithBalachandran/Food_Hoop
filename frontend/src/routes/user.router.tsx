@@ -13,8 +13,6 @@ import GuestRouteProtect from "./Guest.route";
             <Route path="/register" element={<GuestRouteProtect><Auth/></GuestRouteProtect>}/>
             <Route path="/otp" element={<GuestRouteProtect><Auth/></GuestRouteProtect>}/>
             <Route path="/login" element={<GuestRouteProtect><LoginPage/></GuestRouteProtect>}/>
-
-
         </Routes>
     )
     

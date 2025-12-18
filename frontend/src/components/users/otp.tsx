@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { otpVerification ,resendOTP } from "../../services/auth.service";
 import { useNavigate } from "react-router-dom";
-import { Report } from "notiflix";
+import { toast } from "react-toastify";
 
 interface otpProps{
   onOtpSuccess:()=>void;
@@ -51,29 +51,22 @@ const OtpPage = ({onOtpSuccess}:otpProps) => {
               const res = await resendOTP();
               setTimer(60);
               console.log(res.message);
-              Report.success(
-                "OTP Sent",
-               "A new OTP has been sent to your email.",
-               "Close"
+              toast.success(
+               " A new OTP has been sent to your email."
               )
+            
         } catch (error:any) {
          if (error.response) {
-        Report.failure(
-          "Error",
-          error.response.data.message,
-          "Close"
-        )
+          toast.error(
+            error.response.data.message
+          )
       } else if (error.request) {
-        Report.failure(
-          "Server Side",
-          " No response from server",
-          "Close"
-        )
+          toast.error(
+            " No response from server"
+          )
       } else {
-        Report.failure(
-          "Error",
-          error,
-          "Close"
+        toast.error(
+           error
         )
       }
         }finally{
@@ -86,11 +79,9 @@ const OtpPage = ({onOtpSuccess}:otpProps) => {
     e.preventDefault();
     const finalOtp = otp.join('');
     if (finalOtp.length < otp.length) {
-     Report.warning(
-      "OTP Warning",
+      toast.warning(
       "Please Enter Full OTP.",
-      "Got it"
-    );
+      )
       return;
     }
 
@@ -98,32 +89,23 @@ const OtpPage = ({onOtpSuccess}:otpProps) => {
       setLoading(true);
       const res = await otpVerification(finalOtp);
       onOtpSuccess();
-      Report.success(
-        "OTP Verified",
-         JSON.stringify(res.message),
-         "Success"
-      )
-      
+      toast.success(
+          JSON.stringify(res.message)
+      );
       navigate('/login')
     } catch (error: any) {
       console.error(error);
       if (error.response) {
-        Report.failure(
-          "Error",
-          error.response.data.message,
-          "Close"
+        toast.error(
+          error.response.data.message
         )
       } else if (error.request) {
-        Report.failure(
-          "Server Side",
-          " No response from server",
-          "Close"
+        toast.error(
+           " No response from server"
         )
       } else {
-        Report.failure(
-          "Error",
-          error,
-          "Close"
+        toast.error(
+            error
         )
       }
 

@@ -6,12 +6,21 @@ import { OTP , IsOtp } from '../models/otp.model';
 import { generateSlug } from '../utils/generateSlug';
 import { sendMailer } from '../utils/sendMailer';
 import { IsTemp } from '../models/temp.model';
+import { TempRepository } from '../ repositories/temp.repository';
+import { OtpRepository } from '../ repositories/otp.repository';
+import { IDeliveryService } from './interface/delivery.service.interface';
+import { RegisterUserRequestDto } from '../dto/request/user.request.dto';
+import { RegisterUserResponseDto, UserResponseDto } from '../dto/response/user.response.dto';
 
 
-export class DeliveryService {
+export class DeliveryService implements IDeliveryService{
 
-     private userRepo = new UserRepository();
-     private authService = new AuthService();
+          private _userRepo = new UserRepository();
+          private _authService = new AuthService();
+          private _tempRepo = new TempRepository();
+          private _otpRepo = new OtpRepository();
+     
+
 
      // hasing password =============================================================
 
@@ -19,17 +28,27 @@ export class DeliveryService {
           return bcrypt.hash(password,10)
      }
 
+
+
+     //  Map to User  Response =======================================================
+     
+         private mapToUserResponse(user:any):UserResponseDto{
+           return {
+               id:user._id,
+               name:user.name,
+               email:user.email,
+               mobile:user.mobile,
+               slug:user.slug,
+               role:user.role,
+               city:user.city
+           }
+         }
+
      // Register new user and genarating otp , sending mail with the otp ========================================
 
-     async registerDelivery(data:{
-          name:string,
-          email:string,
-          city:string,
-          mobile:string,
-          password:string
-     }):Promise<{user:IsTemp}>{
+     async registerDelivery(data:RegisterUserRequestDto):Promise<RegisterUserResponseDto>{
           
-          const existingUser = await this.userRepo.findExistingEmail(data.email);
+          const existingUser = await this._tempRepo.findOne({email:data.email});
           
           if (existingUser) {
                throw new Error('User Already Exist');
@@ -39,7 +58,7 @@ export class DeliveryService {
           const hashedPassword = await this.hashPassword(data.password);
 
 
-          const user = await this.userRepo.createTemp({
+          const user = await this._tempRepo.create({
                ...data,
                password:hashedPassword,
                slug:slug,
@@ -61,7 +80,10 @@ export class DeliveryService {
 
           await sendMailer(generateOtp.toString(),email);
 
-          return {user}
+          return {
+               message:"Delivery gay registered successfully .OTP send to email",
+               user:this.mapToUserResponse(user)
+          }
      }
 
 

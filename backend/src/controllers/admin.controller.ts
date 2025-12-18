@@ -1,12 +1,14 @@
 
 import { Request,Response } from "express";
 import { AdminService } from "../services/admin.service";
+import { IAdminController } from "./interface/admin.controller.interface";
+import { IAdminService } from "../services/interface/admin.service.interface";
 
 
-export class AdminController {
+export class AdminController implements AdminController {
 
-    private AdminService = new AdminService();
-
+    constructor(private _adminService:IAdminService){}
+   
     // vendor Registration 
 
     registerAdmin = async(req:Request,res:Response):Promise<void>=>{
@@ -14,7 +16,7 @@ export class AdminController {
             
             const {name,email,mobile,password} = req.body;
             const {user} = 
-            await this.AdminService.registerAdmin({ name,email,mobile,password});
+            await this._adminService.registerAdmin({ name,email,mobile,password});
           
             res.cookie("otpEmail",email,{httpOnly:true,sameSite:"strict",secure:true});
 

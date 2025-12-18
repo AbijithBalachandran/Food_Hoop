@@ -1,20 +1,22 @@
 
 import { Request,Response } from "express";
-import { vendorService } from "../services/vendor.service";
+import { VendorService } from "../services/vendor.service";
+import { IVendorService } from "../services/interface/vendor.service.interface";
+import { IVendorController } from "./interface/vendor.controller.interface";
 
 
-export class vendorController {
+export class vendorController implements IVendorController{
 
-    private VendorService = new vendorService();
+   constructor( private _vendorService:IVendorService){};
 
-    // vendor Registration 
+    // vendor Registration ===========================================
 
     registerVendor = async(req:Request,res:Response):Promise<void>=>{
         try {
             
             const {resturentName,licenceNumber,name,email,mobile,password} = req.body;
             const {user} = 
-            await this.VendorService.registerVendor({ resturentName,licenceNumber,name,email,mobile,password});
+            await this._vendorService.registerVendor({ resturentName,licenceNumber,name,email,mobile,password});
           
             res.cookie("otpEmail",email,{httpOnly:true,sameSite:"strict",secure:true});
 

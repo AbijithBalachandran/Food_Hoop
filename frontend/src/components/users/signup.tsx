@@ -2,8 +2,8 @@ import { useState } from "react";
 import { validEmail, validName, validPassword, validMobile } from "../../utils/validations/signin";
 import { registerUser } from "../../services/auth.service";
 import { useNavigate } from "react-router-dom";
-import { Report } from "notiflix";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "react-toastify";
 
 interface signupPros{
   onSignupSuccess:()=>void
@@ -60,18 +60,14 @@ export default function Signup({onSignupSuccess}:signupPros) {
     setErrors({});
     console.log('form data :',form)
     registerUser(form).then(() => {
-      onSignupSuccess()
-       Report.success(
-        "Success",
-        "Successfully Complete",
-        "Thanks"
-       )
+      onSignupSuccess();
+      toast.success(
+          "Successfully Complete"
+      )
       navigate("/otp");
-    }).catch((errors)=>{
-      Report.failure(
-        "Error",
-        errors,
-        "Close"
+    }).catch((error)=>{
+      toast.error(
+        error
       )
     })
   };

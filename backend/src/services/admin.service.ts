@@ -1,17 +1,27 @@
 import bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
-import { UserModel ,IsUser} from '../models/userModel';
+import { UserModel ,IsUser} from '../models/user.model';
 import { UserRepository } from '../ repositories/user.repository';
 import { generate4digitOtp } from '../utils/generateOTP';
 import { OTP , IsOtp } from '../models/otp.model';
 import { generateSlug } from '../utils/generateSlug';
 import { sendMailer } from '../utils/sendMailer';
 import { IsTemp } from '../models/temp.model';
+import { TempRepository } from '../ repositories/temp.repository';
+import { OtpRepository } from '../ repositories/otp.repository';
+import { IAdminService } from './interface/admin.service.interface';
+import { RegisterUserRequestDto } from '../dto/request/user.request.dto';
+import { RegisterUserResponseDto, UserResponseDto } from '../dto/response/user.response.dto';
 
-export class AdminService {
+export class AdminService implements IAdminService {
 
-     private userRepo = new UserRepository();
-     private authService = new AuthService();
+     //  Repositories ++==============================================================
+    
+         private _userRepo = new UserRepository();
+         private _authService = new AuthService();
+         private _tempRepo = new TempRepository();
+         private _otpRepo = new OtpRepository();
+
 
      // hasing password =============================================================
 
@@ -19,16 +29,25 @@ export class AdminService {
           return bcrypt.hash(password,10)
      }
 
+       //  Map to User  Response =======================================================
+     
+         private mapToUserResponse(user:any):UserResponseDto{
+           return {
+               id:user._id,
+               name:user.name,
+               email:user.email,
+               mobile:user.mobile,
+               slug:user.slug,
+               role:user.role
+           }
+         }
+     
+
      // Register Admin and genarating otp , sending mail with the otp ========================================
 
-     async registerAdmin(data:{
-          name:string,
-          email:string,
-          mobile:string,
-          password:string
-     }):Promise<{user:IsTemp}>{
+     async registerAdmin(data:RegisterUserRequestDto):Promise<RegisterUserResponseDto>{
           
-          const existingUser = await this.userRepo.findExistingEmail(data.email);
+          const existingUser = await this._tempRepo.findOne({email:data.email});
           
           if (existingUser) {
                throw new Error('User Already Exist');
@@ -38,7 +57,7 @@ export class AdminService {
           const hashedPassword = await this.hashPassword(data.password);
 
 
-          const user = await this.userRepo.createTemp({
+          const tempUser = await this._tempRepo.create({
                ...data,
                password:hashedPassword,
                slug:slug,
@@ -60,7 +79,10 @@ export class AdminService {
 
           await sendMailer(generateOtp.toString(),email);
 
-          return {user}
+          return {
+             message: 'Admin registered successfully. OTP sent to email.',
+             user: this.mapToUserResponse(tempUser),
+          }
      }
 
      

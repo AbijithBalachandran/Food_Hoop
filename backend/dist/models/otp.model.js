@@ -20,6 +20,6 @@ const otpSchema = new mongoose_1.default.Schema({
         default: Date.now,
         expires: 60
     }
-});
+}, { timestamps: true });
 exports.OTP = mongoose_1.default.model("OTP", otpSchema);
 //# sourceMappingURL=otp.model.js.map

@@ -1,26 +1,16 @@
-import { IsUser } from '../models/userModel';
-import { IsTemp } from '../models/temp.model';
-export declare class UserService {
-    private userRepo;
-    private authService;
-    private hashPassword;
-    registerUser(data: {
-        name: string;
-        email: string;
-        mobile: string;
-        password: string;
-    }): Promise<{
-        user: IsTemp;
-    }>;
-    verifyOtp(email: string, otp: number | string): Promise<boolean>;
-    ResendOTP(email: string): Promise<boolean>;
-    loginUser(data: {
-        email: string;
-        password: string;
-    }): Promise<{
-        user: IsUser;
-        accessToken: string;
-        refreshToken: string;
-    }>;
+import { IUserService } from './interface/user.service.interface';
+import { RegisterUserRequestDto, LoginUserRequestDto, VerifyOtpRequestDto } from '../dto/request/user.request.dto';
+import { RegisterUserResponseDto, LoginUserResponseDto, ResendOtpResponseDto, VerifyOtpResponseDto } from '../dto/response/user.response.dto';
+export declare class UserService implements IUserService {
+    private _userRepo;
+    private _authService;
+    private _tempRepo;
+    private _otpRepo;
+    private _hashPassword;
+    private mapToUserResponse;
+    registerUser(data: RegisterUserRequestDto): Promise<RegisterUserResponseDto>;
+    verifyOtp(data: VerifyOtpRequestDto): Promise<VerifyOtpResponseDto>;
+    ResendOTP(email: string): Promise<ResendOtpResponseDto>;
+    loginUser(data: LoginUserRequestDto): Promise<LoginUserResponseDto>;
 }
 //# sourceMappingURL=user.service.d.ts.map
